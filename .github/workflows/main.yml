@@ -1,0 +1,44 @@
+name: Flutter Build Masterstroke
+
+on:
+  push:
+    branches: [ "main" ] # Jab bhi code push karoge, build start ho jayegi
+  workflow_dispatch:      # Aap manually bhi button daba kar build kar sakte ho
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub ke server pe aapka code copy karna
+      - uses: actions/checkout@v4
+
+      # 2. Java setup karna (Android build ke liye zaroori hai)
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Flutter SDK install karna
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+
+      # 4. Saare packages (battery, webview, etc.) download karna
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. APK Build karna (Debug mode sabse safe aur fast hai)
+      - name: Build APK
+        run: flutter build apk --debug
+
+      # 6. APK ko download section mein bhej dena
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Network-App-Release
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          
